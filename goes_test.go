@@ -10,6 +10,7 @@ import (
 	"os"
 	"testing"
 	"time"
+        "encoding/json"
 )
 
 var (
@@ -106,9 +107,7 @@ func (s *GoesTestSuite) TestRunMissingIndex(c *C) {
 
 func (s *GoesTestSuite) TestCreateIndex(c *C) {
 	indexName := "testcreateindexgoes"
-
 	conn := NewConnection(ES_HOST, ES_PORT)
-	defer conn.DeleteIndex(indexName)
 
 	mapping := map[string]interface{}{
 		"settings": map[string]interface{}{
@@ -132,6 +131,16 @@ func (s *GoesTestSuite) TestCreateIndex(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(resp.Ok, Equals, true)
 	c.Assert(resp.Acknowledged, Equals, true)
+
+	conn.DeleteIndex(indexName)
+
+        raw, err := json.Marshal(mapping)
+        c.Assert(err, IsNil)
+
+	resp, err = conn.CreateIndex(indexName, string(raw))
+	c.Assert(resp.Ok, Equals, true)
+	c.Assert(resp.Acknowledged, Equals, true)
+	conn.DeleteIndex(indexName)
 }
 
 func (s *GoesTestSuite) TestDeleteIndexInexistantIndex(c *C) {
@@ -233,6 +242,10 @@ func (s *GoesTestSuite) TestBulkSend(c *C) {
 
 	var expectedTotal uint64 = 2
 	c.Assert(searchResults.Hits.Total, Equals, expectedTotal)
+
+	searchResultsRaw, err := conn.Search(`{"query":{"match_all":{}}}`, []string{indexName}, []string{})
+	c.Assert(err, IsNil)
+	c.Assert(searchResultsRaw.Hits.Total, Equals, expectedTotal)
 
 	extraDocId := ""
 	checked := 0

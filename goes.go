@@ -34,7 +34,7 @@ func NewConnection(host string, port string) *Connection {
 }
 
 // CreateIndex creates a new index represented by a name and a mapping
-func (c *Connection) CreateIndex(name string, mapping map[string]interface{}) (Response, error) {
+func (c *Connection) CreateIndex(name string, mapping interface{}) (Response, error) {
 	r := Request{
 		Conn:      c,
 		Query:     mapping,
@@ -158,7 +158,7 @@ func (c *Connection) BulkSend(index string, documents []Document) (Response, err
 }
 
 // Search executes a search query against an index
-func (c *Connection) Search(query map[string]interface{}, indexList []string, typeList []string) (Response, error) {
+func (c *Connection) Search(query interface{}, indexList []string, typeList []string) (Response, error) {
 	r := Request{
 		Conn:      c,
 		Query:     query,
@@ -230,11 +230,15 @@ func (req *Request) Run() (Response, error) {
 	if req.api == "_bulk" {
 		postData = req.bulkData
 	} else {
-		b, err := json.Marshal(req.Query)
-		if err != nil {
-			return Response{}, err
-		}
-		postData = b
+                if raw,ok := req.Query.(string); ok {
+                    postData = []byte(raw)
+                } else {
+                    b, err := json.Marshal(req.Query)
+                    if err != nil {
+                            return Response{}, err
+                    }
+                    postData = b
+                }
 	}
 
 	reader := bytes.NewReader(postData)
