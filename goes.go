@@ -230,15 +230,15 @@ func (req *Request) Run() (Response, error) {
 	if req.api == "_bulk" {
 		postData = req.bulkData
 	} else {
-                if raw,ok := req.Query.(string); ok {
-                    postData = []byte(raw)
-                } else {
-                    b, err := json.Marshal(req.Query)
-                    if err != nil {
-                            return Response{}, err
-                    }
-                    postData = b
-                }
+		if raw, ok := req.Query.(string); ok {
+			postData = []byte(raw)
+		} else {
+			b, err := json.Marshal(req.Query)
+			if err != nil {
+				return Response{}, err
+			}
+			postData = b
+		}
 	}
 
 	reader := bytes.NewReader(postData)

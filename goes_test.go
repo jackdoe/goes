@@ -5,12 +5,12 @@
 package goes
 
 import (
+	"encoding/json"
 	. "launchpad.net/gocheck"
 	"net/url"
 	"os"
 	"testing"
 	"time"
-        "encoding/json"
 )
 
 var (
@@ -134,8 +134,8 @@ func (s *GoesTestSuite) TestCreateIndex(c *C) {
 
 	conn.DeleteIndex(indexName)
 
-        raw, err := json.Marshal(mapping)
-        c.Assert(err, IsNil)
+	raw, err := json.Marshal(mapping)
+	c.Assert(err, IsNil)
 
 	resp, err = conn.CreateIndex(indexName, string(raw))
 	c.Assert(resp.Ok, Equals, true)
